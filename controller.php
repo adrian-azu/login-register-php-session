@@ -1,5 +1,5 @@
 <?php
-
+session_start(); //start session for the user
 include( "config.php"); //include database connection
 $update=false;
 $errors=array();
@@ -37,8 +37,7 @@ $id= $username= $password= $firstname=$roles= $lastname="";
       $pass=trim($_POST['password']);
   }
   if(strlen($user)>0 && strlen($pass)>0 && empty($errors)){
-    $sql = "SELECT * FROM users WHERE username=?"; //sql query for prepare statement
-    $stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
     $stmt->bind_param("s", $param_username);
     $param_username = $user;
     if($stmt->execute()){ //if successfully executed
@@ -47,21 +46,19 @@ $id= $username= $password= $firstname=$roles= $lastname="";
     if($stmt->num_rows == 1){
       $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
       $stmt->fetch();
-      echo md5($pass);
       $pass=md5($pass);
       if($pass===$password)
        {
+         session_start(); //start session for the user
          if($roles=='admin' || $roles=='Admin'){
-             session_start(); //start session for the user
            $_SESSION['user']=$user; //store username and id to session
            $_SESSION['userid']=$id;
              header("location: admin/admin.php");
          }else{
-           session_start();
+           session_start(); //start session for the user
            $_SESSION['user']=$user;
            $_SESSION['userid']=$id;
            $_SESSION['Username']=$username;
-           echo $_SESSION['user'];
            header("location: welcome.php");
          }
          }else{
@@ -167,24 +164,42 @@ $id=$_GET['delete'];
   $_SESSION['message']="User Deleted";
   $_SESSION['msg_type']="danger";
 }
-if(isset($_GET['edit'])){
-  $id=$_GET['edit'];
+
+if(isset($_GET['edit']) && !empty($_GET['edit'])){
   $update=true;
-  if ($stmt=$conn->prepare("SELECT * FROM users WHERE id=?")) {
+  $sql="SELECT * FROM users WHERE id=?";
+  if ($stmt=$conn->prepare($sql)) {
+
     $stmt->bind_param("i",$param_id);
-    $param_id=$id;
-    $stmt->execute();
-    $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
-    $stmt->fetch();
-    $fname=$firstname;
-    $lname=$lastname;
-    $user=$username;
-    $roles=$roles;
-  }else{
+    $param_id=$_GET["edit"];
+      if($stmt->execute()){
+
+        $result=$stmt->get_result();
+        if ($result->num_rows==1) {
+
+          $row = $result->fetch_array(MYSQLI_ASSOC);
+          $fname=$row['firstname'];
+          $lname=$row['lastname'];
+          $user=$row['username'];
+          $roles=$row['firstname'];
+        }else{
+          exit();
+        }
+      }
+      else {
+
+        array_push($errors, "Something went wrong" . $stmt->error());
+      }
+
+    }else{
+
     array_push($errors, $conn->error());
+    $stmt->close();
+    $conn->close();
+
+
   }
-  $stmt->close();
-  $conn->close();
+
 }
 
 if(isset($_POST['update']))

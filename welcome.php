@@ -48,7 +48,7 @@ if (empty($_SESSION['user'])){
                <td><a href="welcome.php?edit= <?php echo $row['id']; ?>"class="edit_btn">EDIT</a></td>
                <td><a href="welcome.php?delete=<?php echo $row['id']; ?>" class="del_btn">DELETE</a></td>
              </tr>
-           <?php endwhile; ?>
+           <?php endwhile; $result->free();  ?>
           </table>
         </div>
       </div>
