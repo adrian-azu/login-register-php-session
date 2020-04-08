@@ -1,21 +1,23 @@
 <?php
-session_start();
-include( "config.php");
-global $servername;
-global $username;
-global $password;
-global $dbname;
-global $conn;
-global $user;
-global $errors=array();;
-global $newuser,$fname,$lname,$pass1,$pass2,$msg;
 
-global $msg="";
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-  if (isset($_POST['Login'])) {
+include( "config.php"); //include database connection
+$update=false;
+$errors=array();
+$user="";
+$pass="";
+$newuser="";
+$fname= $lname= $pass1= $pass2="";
+$msg="";
+$roles="";
+$id=0;
+
+
+if($_SERVER["REQUEST_METHOD"] == "POST"){ //check if request is POST method
+  if (isset($_POST['Login'])) { //Check if POST login is triggered
     login();
   }
 }
+
 function login(){
   global $servername;
   global $username;
@@ -35,32 +37,27 @@ $id= $username= $password= $firstname=$roles= $lastname="";
       $pass=trim($_POST['password']);
   }
   if(strlen($user)>0 && strlen($pass)>0 && empty($errors)){
-    $sql = "SELECT * FROM users WHERE username=?";
+    $sql = "SELECT * FROM users WHERE username=?"; //sql query for prepare statement
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $param_username);
     $param_username = $user;
-    if($stmt->execute()){
+    if($stmt->execute()){ //if successfully executed
     $stmt->store_result();
     }
     if($stmt->num_rows == 1){
       $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
       $stmt->fetch();
-      echo $username;
-      echo "<br>";
-      echo $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
-      echo $password;
-      echo "<br>";
-      echo $pass;
-      echo "<br>";
       echo md5($pass);
       $pass=md5($pass);
       if($pass===$password)
        {
          if($roles=='admin' || $roles=='Admin'){
-           $_SESSION['user']=$user;
+             session_start(); //start session for the user
+           $_SESSION['user']=$user; //store username and id to session
            $_SESSION['userid']=$id;
              header("location: admin/admin.php");
          }else{
+           session_start();
            $_SESSION['user']=$user;
            $_SESSION['userid']=$id;
            $_SESSION['Username']=$username;
@@ -92,7 +89,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 }
 
 function register(){
-
+  global $servername;
+  global $username;
+  global $password;
+  global $dbname;
+  global $conn;
+  global $user, $errors;
+  global $newuser,$fname,$lname,$pass1,$pass2,$msg;
+  $roles="user";
 if (empty(trim($_POST['firstname']))){
   array_push($errors,"First Name is required");
 }else{
@@ -129,8 +133,8 @@ if(empty($errors)){
     array_push($errors, "Username already taken");
   }else{
     $pass1=md5($pass1);
-    $sql = "INSERT INTO users (username, password, firstname, lastname)
-    VALUES ('$newuser', '$pass1', '$fname', '$lname')";
+    $sql = "INSERT INTO users (roles,username, password, firstname, lastname)
+    VALUES ('$roles','$newuser', '$pass1', '$fname', '$lname')";
     if ($conn->query($sql) === TRUE) {
       $msg="successfully created!";
       $_SESSION['firstname']=$fname;
@@ -146,27 +150,77 @@ if(empty($errors)){
 }
 function islogin(){
   if (empty($_SESSION['user'])){
-    session_destroy();
-    unset($_SESSION['user']);
+    session_destroy(); //Remove session
+    unset($_SESSION['user']); //Delete user session
     header("location: ../index.php");
   }
 }
-
 if (isset($_GET['logout'])) {
 	session_destroy();
 	unset($_SESSION['user']);
 	header("location: ../index.php");
   echo $_SESSION['user'];
 }
-function fillin(){
-  global $servername;
-  global $username;
-  global $password;
-  global $dbname;
-  global $conn;
-  global $errors,$user,$pass;
-  global $newuser,$fname,$lname,$pass1,$pass2,$msg;
+if(isset($_GET['delete'])){
+$id=$_GET['delete'];
+  $conn->query("DELETE FROM users WHERE id=$id")or die($conn->error());
+  $_SESSION['message']="User Deleted";
+  $_SESSION['msg_type']="danger";
+}
+if(isset($_GET['edit'])){
+  $id=$_GET['edit'];
+  $update=true;
+  if ($stmt=$conn->prepare("SELECT * FROM users WHERE id=?")) {
+    $stmt->bind_param("i",$param_id);
+    $param_id=$id;
+    $stmt->execute();
+    $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
+    $stmt->fetch();
+    $fname=$firstname;
+    $lname=$lastname;
+    $user=$username;
+    $roles=$roles;
+  }else{
+    array_push($errors, $conn->error());
+  }
+  $stmt->close();
+  $conn->close();
+}
 
-
+if(isset($_POST['update']))
+{
+  $fname=$_POST['firstname'];
+  $lname=$_POST['lastname'];
+  $roles=$_POST['roles'];
+  $user=$_POST['user'];
+  $pass=$_POST['password'];
+  $pass1=$_POST['new-pass'];
+  $pass2=$_POST['confirmpass'];
+  $pass=md5($pass);
+  $sql_u="SELECT * FROM users WHERE id=?";
+  $stmt = $conn->prepare($sql_u);
+  $stmt->bind_param("i", $param_id);
+  $param_id=$id;
+  if($stmt->execute()){
+    $stmt->store_result();
+  }if($stmt->num_rows == 1){
+    $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
+    $stmt->fetch();
+    $pass=md5($pass);
+    if($pass===$password)
+    {
+      if($pass1==$pass2){
+        $pass=md5($pass1);
+        $sql = "UPDATE users SET firstname=$fname, lastname=$lname, roles=$roles,password=$pass WHERE username=?";
+        $stmt = $conn->prepare($sql);
+        $conn->query($sql);
+      }
+      else{
+        array_push($errors, "New Password not match");
+      }
+    }else{
+      array_push($errors, "Incorrect Password");
+    }
+  }
 }
 ?>
