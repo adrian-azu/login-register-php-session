@@ -158,81 +158,114 @@ if (isset($_GET['logout'])) {
 	header("location: ../index.php");
   echo $_SESSION['user'];
 }
+
 if(isset($_GET['delete'])){
 $id=$_GET['delete'];
   $conn->query("DELETE FROM users WHERE id=$id")or die($conn->error());
   $_SESSION['message']="User Deleted";
-  $_SESSION['msg_type']="danger";
 }
 
 if(isset($_GET['edit']) && !empty($_GET['edit'])){
-  $update=true;
+
   $sql="SELECT * FROM users WHERE id=?";
   if ($stmt=$conn->prepare($sql)) {
-
     $stmt->bind_param("i",$param_id);
     $param_id=$_GET["edit"];
       if($stmt->execute()){
-
         $result=$stmt->get_result();
         if ($result->num_rows==1) {
-
           $row = $result->fetch_array(MYSQLI_ASSOC);
           $fname=$row['firstname'];
           $lname=$row['lastname'];
           $user=$row['username'];
           $roles=$row['firstname'];
+          $update=true;
         }else{
-          array_push($errors, $stmt->error());
-          exit();
+          array_push($errors, $stmt->error);
+        }
+      } else {
+        array_push($errors, "Something went wrong" . $stmt->error);
+      }
+    }
+  }
+
+if(isset($_POST["save"]) && !empty($_POST["save"])){
+echo "<h1>HELLO</h1>";
+$_SESSION['message']="Hello";
+}
+if(isset($_POST['update']) && !empty($_POST['update'])){
+  update();
+}
+function update(){
+  if(isset($_POST['update']) && !empty($_POST['update'])){
+  $_SESSION['message']="Hello";
+
+    if(isset($_POST['firstname']) && !empty($_POST['firstname'])) {
+
+      $fname=$_POST['firstname'];
+    }else{
+
+      array_push($errors, "First name is required");
+    }
+
+    if(isset($_POST['lastname']) && !empty($_POST['lastname'])){
+
+      $lname=$_POST['lastname'];
+    }else {
+
+      array_push($errors, "Last Name is required");
+    }
+    if (isset($_POST['roles']) && !empty($_POST['roles'])) {
+
+      $roles=$_POST['roles'];
+    }else{
+
+    array_push($errors, "No Roles selected");
+    }
+    if (isset($_POST['user']) && !empty($_POST['user'])) {
+
+      $user=$_POST['user'];
+    }else{
+
+    array_push($errors, "Username is required");
+    }
+    if (isset($_POST['password']) && !empty($_POST['password'])) {
+
+      $pass=$_POST['password'];
+    }else{
+
+    array_push($errors, "No password is found");
+    }
+    if(empty($errors)){
+      $pass=md5($pass);
+      echo $fname;
+      $sql_u="SELECT * FROM users WHERE id=?";
+      $stmt = $conn->prepare($sql_u);
+      $stmt->bind_param("i", $param_id);
+      $param_id=$id;
+      if($stmt->execute()){
+        $stmt->store_result();
+      }if($stmt->num_rows == 1){
+        $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
+        $stmt->fetch();
+        $pass=md5($pass);
+        if($pass===$password)
+        {
+          if($pass1==$pass2){
+            $pass=md5($pass1);
+            $sql = "UPDATE users SET firstname=$fname, lastname=$lname, roles=$roles,password=$pass WHERE username=?";
+            $stmt = $conn->prepare($sql);
+            $conn->query($sql);
+          }
+          else{
+            array_push($errors, "New Password not match");
+          }
+        }else{
+          array_push($errors, "Incorrect Password");
         }
       }
-      else {
-
-        array_push($errors, "Something went wrong" . $stmt->error());
-      }
-    }else{
-
-    array_push($errors, $conn->error());
-    $stmt->close();
-    $conn->close();
-  }
-}
-
-if(isset($_POST['update']))
-{
-  $fname=$_POST['firstname'];
-  $lname=$_POST['lastname'];
-  $roles=$_POST['roles'];
-  $user=$_POST['user'];
-  $pass=$_POST['password'];
-  $pass1=$_POST['new-pass'];
-  $pass2=$_POST['confirmpass'];
-  $pass=md5($pass);
-  $sql_u="SELECT * FROM users WHERE id=?";
-  $stmt = $conn->prepare($sql_u);
-  $stmt->bind_param("i", $param_id);
-  $param_id=$id;
-  if($stmt->execute()){
-    $stmt->store_result();
-  }if($stmt->num_rows == 1){
-    $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
-    $stmt->fetch();
-    $pass=md5($pass);
-    if($pass===$password)
-    {
-      if($pass1==$pass2){
-        $pass=md5($pass1);
-        $sql = "UPDATE users SET firstname=$fname, lastname=$lname, roles=$roles,password=$pass WHERE username=?";
-        $stmt = $conn->prepare($sql);
-        $conn->query($sql);
-      }
-      else{
-        array_push($errors, "New Password not match");
-      }
-    }else{
-      array_push($errors, "Incorrect Password");
     }
   }
 }
+
 ?>
