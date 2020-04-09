@@ -18,6 +18,14 @@ if (empty($_SESSION['user'])){
     <title></title>
   </head>
   <body>
+    <?php if (isset($_SESSION['message'])): ?>
+	<div class="msg">
+		<?php 
+			echo $_SESSION['message'];
+			unset($_SESSION['message']);
+		?>
+	</div>
+<?php endif ?>
     <div class="container">
       <div class="low-header">
         <li><a href="welcome.php?log-out='1'">log-out</a></li>
@@ -52,8 +60,7 @@ if (empty($_SESSION['user'])){
           </table>
         </div>
       </div>
-      <?php display_error(); ?>
-          <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+          <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
             <div class="form-group">
               <label>First Name</label>
               <input type="text" name="firstname" value="<?php echo $fname ?>">
@@ -88,11 +95,11 @@ if (empty($_SESSION['user'])){
             </div>
             <div class="form-group">
               <?php if($update==true): ?>
-                <button class="btn" type="submit" name="update" onsubmit="return false">UPDATE</button>
+                <button class="btn" type="submit" name="update">UPDATE</button>
               <?php else: ?>
-            <button class="btn" type="submit" name="save" onsubmit="return false">SAVE</button>
-          <?php endif; ?>
-          </div>
+                <button class="btn" type="submit" name="save">SAVE</button>
+              <?php endif ?>
+          </div><?php display_error(); ?>
       </form>
     </div>
   </body>
