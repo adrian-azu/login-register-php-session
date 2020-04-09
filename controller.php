@@ -183,6 +183,7 @@ if(isset($_GET['edit']) && !empty($_GET['edit'])){
           $user=$row['username'];
           $roles=$row['firstname'];
         }else{
+          array_push($errors, $stmt->error());
           exit();
         }
       }
@@ -190,16 +191,12 @@ if(isset($_GET['edit']) && !empty($_GET['edit'])){
 
         array_push($errors, "Something went wrong" . $stmt->error());
       }
-
     }else{
 
     array_push($errors, $conn->error());
     $stmt->close();
     $conn->close();
-
-
   }
-
 }
 
 if(isset($_POST['update']))
