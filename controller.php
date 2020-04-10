@@ -189,16 +189,22 @@ if(isset($_GET['edit']) && !empty($_GET['edit'])){
       }
     }
   }
-
-if(isset($_POST["save"]) && !empty($_POST["save"])){
-echo "<h1>HELLO</h1>";
-$_SESSION['message']="Hello";
-}
-if(isset($_POST['update']) && !empty($_POST['update'])){
-  update();
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+  if(isset($_POST["save"])){
+    $_SESSION['message']="Hello";
+  }
+  if(isset($_POST['update'])){
+      update();
+    }
 }
 function update(){
-  if(isset($_POST['update']) && !empty($_POST['update'])){
+  global $servername;
+  global $username;
+  global $password;
+  global $dbname;
+  global $conn;
+  global $user, $errors;
+  global $newuser,$fname,$lname,$pass1,$pass2,$msg;
   $_SESSION['message']="Hello";
 
     if(isset($_POST['firstname']) && !empty($_POST['firstname'])) {
@@ -266,7 +272,6 @@ function update(){
         }
       }
     }
-  }
 }
 
 ?>
