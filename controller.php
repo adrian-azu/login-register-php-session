@@ -191,8 +191,67 @@ if(isset($_GET['edit']) && !empty($_GET['edit'])){
   }
 if($_SERVER["REQUEST_METHOD"] == "POST"){
   if(isset($_POST["save"])){
-    $_SESSION['message']="Hello";
+    if (isset($_POST["firstname"])) {
+      $fname=$_POST['firstname'];
+    }else{
+      array_push($errors, "First Name is required!");
+    }
+
+    if (isset($_POST["lastname"])) {
+      $lname=$_POST['lastname'];
+    }else{
+      array_push($errors, "Last Name is required!");
+    }
+
+    if (isset($_POST["roles"])) {
+      $roles=$_POST['roles'];
+    }else{
+      array_push($errors,"Kindly select a role");
+    }
+
+    if (isset($_POST["user"])) {
+      $newuser=$_POST['user'];
+    }else{
+      array_push($errors,"Kindly select a role");
+    }
+
+    if (isset($_POST["password"])) {
+      $pass=$_POST['password'];
+    }else{
+      array_push($errors,"No Password found");
+    }
+
+    if (empty($errors)) {
+      $sql_u = "SELECT * FROM users WHERE username=?";
+      $stmt=$conn->prepare($sql_u);
+      $stmt->bind_param("s", $param_username);
+      $param_username = $newuser;
+
+      if ($stmt->execute()) {
+        $stmt->store_result();
+
+      }if($stmt->num_rows >0){
+        array_push($errors, "Username is already taken");
+
+      }else{
+        $sql="INSERT INTO users (roles,username, password, firstname, lastname)
+        VALUES (?,?,?,?,?)";
+        $stmt=$conn->prepare($sql);
+        $stmt->bind_param("sssss", $param_roles,$param_user,$param_pass,$param_fname,$param_lname);
+        $param_roles = $roles;
+        $param_user = $newuser;
+        $param_pass = md5($pass);
+        $param_fname = $fname;
+        $param_lname = $lname;
+        if($stmt->execute()){
+          $_SESSION['message']="New account saved!";
+        }else{
+          array_push($errors,$stmt->error);
+        }
+      }
+    }
   }
+
   if(isset($_POST['update'])){
       update();
     }
@@ -208,42 +267,45 @@ function update(){
   $_SESSION['message']="Hello";
 
     if(isset($_POST['firstname']) && !empty($_POST['firstname'])) {
-
       $fname=$_POST['firstname'];
-    }else{
 
+    }else{
       array_push($errors, "First name is required");
+
     }
 
     if(isset($_POST['lastname']) && !empty($_POST['lastname'])){
-
       $lname=$_POST['lastname'];
-    }else {
 
+    }else {
       array_push($errors, "Last Name is required");
+
     }
     if (isset($_POST['roles']) && !empty($_POST['roles'])) {
-
       $roles=$_POST['roles'];
-    }else{
 
+    }else{
     array_push($errors, "No Roles selected");
+
     }
+
     if (isset($_POST['user']) && !empty($_POST['user'])) {
-
       $user=$_POST['user'];
-    }else{
 
+    }else{
     array_push($errors, "Username is required");
+
     }
     if (isset($_POST['password']) && !empty($_POST['password'])) {
-
       $pass=$_POST['password'];
-    }else{
 
+    }else{
     array_push($errors, "No password is found");
+
     }
+
     if(empty($errors)){
+
       $pass=md5($pass);
       echo $fname;
       $sql_u="SELECT * FROM users WHERE id=?";

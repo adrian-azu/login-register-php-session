@@ -73,6 +73,7 @@ if (empty($_SESSION['user'])){
               <label>Role</label>
               <?php if($update==false): ?>
               <select name="roles">
+                    <option hidden disabled selected value> -- select an option -- </option>
                     <option value="admin">Admin</option>
                     <option value="user">User</option>
                       </select>
@@ -80,11 +81,11 @@ if (empty($_SESSION['user'])){
                     <select name="roles">
                       <?php if($roles==="user" || "User"): ?>
                         <option value="<?php echo $roles; ?>"><?php echo $roles; ?></option>
-                        <option value="admin">Admin</option>
+                        <option value="Admin">Admin</option>
                       <?php else: ?>
                         <option value="<?php echo $roles; ?>"><?php echo $roles; ?></option>
-                        <option value="user">User</option>
-                      <?php endif ?>  
+                        <option value="User">User</option>
+                      <?php endif ?>
               </select>
               <?php endif ?>
             </div>
@@ -94,16 +95,8 @@ if (empty($_SESSION['user'])){
               <input type="text" name="user" value="<?php echo $user ?>">
             </div>
             <div class="form-group">
-              <label>Old Password</label>
+              <label>Password</label>
               <input type="password" name="password" placeholder="Enter your old password">
-            </div>
-            <div class="form-group">
-              <label>New Password</label>
-              <input type="password" name="new-pass">
-            </div>
-            <div class="form-group">
-              <label>Confirm Password</label>
-              <input type="password" name="confirmpass">
             </div>
             <div class="form-group">
               <?php if($update==true): ?>
