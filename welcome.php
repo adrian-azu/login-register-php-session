@@ -74,8 +74,8 @@ if (empty($_SESSION['user'])){
               <?php if($update==false): ?>
               <select name="roles">
                     <option hidden disabled selected value> -- select an option -- </option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
+                    <option value="Admin">Admin</option>
+                    <option value="User">User</option>
                       </select>
                   <?php else: ?>
                     <select name="roles">

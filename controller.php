@@ -264,76 +264,75 @@ function update(){
   global $conn;
   global $user, $errors;
   global $newuser,$fname,$lname,$pass1,$pass2,$msg;
-  $_SESSION['message']="Hello";
+  if(isset($_POST['firstname']) && !empty($_POST['firstname'])) {
+    $fname=$_POST['firstname'];
 
-    if(isset($_POST['firstname']) && !empty($_POST['firstname'])) {
-      $fname=$_POST['firstname'];
+  }else{
+    array_push($errors, "First name is required");
 
-    }else{
-      array_push($errors, "First name is required");
+  }
 
-    }
+  if(isset($_POST['lastname']) && !empty($_POST['lastname'])){
+    $lname=$_POST['lastname'];
 
-    if(isset($_POST['lastname']) && !empty($_POST['lastname'])){
-      $lname=$_POST['lastname'];
+  }else {
+    array_push($errors, "Last Name is required");
 
-    }else {
-      array_push($errors, "Last Name is required");
+  }
+  if (isset($_POST['roles']) && !empty($_POST['roles'])) {
+    $roles=$_POST['roles'];
 
-    }
-    if (isset($_POST['roles']) && !empty($_POST['roles'])) {
-      $roles=$_POST['roles'];
+  }else{
+  array_push($errors, "No Roles selected");
 
-    }else{
-    array_push($errors, "No Roles selected");
+  }
 
-    }
-
-    if (isset($_POST['user']) && !empty($_POST['user'])) {
+  if (isset($_POST['user']) && !empty($_POST['user'])) {
       $user=$_POST['user'];
 
-    }else{
+  }else{
     array_push($errors, "Username is required");
 
-    }
-    if (isset($_POST['password']) && !empty($_POST['password'])) {
-      $pass=$_POST['password'];
+  }
+  if (isset($_POST['password']) && !empty($_POST['password'])) {
+    $pass=$_POST['password'];
 
-    }else{
+  }else{
     array_push($errors, "No password is found");
 
-    }
+  }
 
-    if(empty($errors)){
+  if(empty($errors)){
 
+    $pass=md5($pass);
+    echo $fname;
+    $sql_u="SELECT * FROM users WHERE id=?";
+    $stmt = $conn->prepare($sql_u);
+    $stmt->bind_param("i", $param_id);
+    $param_id=$id;
+    if($stmt->execute()){
+      $stmt->store_result();
+    }if($stmt->num_rows == 1){
+      $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
+      $stmt->fetch();
       $pass=md5($pass);
-      echo $fname;
-      $sql_u="SELECT * FROM users WHERE id=?";
-      $stmt = $conn->prepare($sql_u);
-      $stmt->bind_param("i", $param_id);
-      $param_id=$id;
-      if($stmt->execute()){
-        $stmt->store_result();
-      }if($stmt->num_rows == 1){
-        $stmt->bind_result($id,$username,$password,$roles,$firstname,$lastname);
-        $stmt->fetch();
-        $pass=md5($pass);
-        if($pass===$password)
-        {
-          if($pass1==$pass2){
-            $pass=md5($pass1);
-            $sql = "UPDATE users SET firstname=$fname, lastname=$lname, roles=$roles,password=$pass WHERE username=?";
-            $stmt = $conn->prepare($sql);
-            $conn->query($sql);
-          }
-          else{
-            array_push($errors, "New Password not match");
-          }
-        }else{
-          array_push($errors, "Incorrect Password");
+      if($pass===$password)
+      {
+        if($pass1==$pass2){
+          $pass=md5($pass1);
+          $sql = "UPDATE users SET firstname=$fname, lastname=$lname, roles=$roles,password=$pass WHERE username=?";
+          $stmt = $conn->prepare($sql);
+          $conn->query($sql);
+          $_SESSION['message'] = "Account updated!";
         }
+        else{
+          array_push($errors, "New Password not match");
+        }
+      }else{
+        array_push($errors, "Incorrect Password");
       }
     }
+  }
 }
 
 ?>
