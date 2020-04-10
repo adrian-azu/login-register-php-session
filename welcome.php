@@ -20,7 +20,7 @@ if (empty($_SESSION['user'])){
   <body>
     <?php if (isset($_SESSION['message'])): ?>
 	<div class="msg">
-		<?php 
+		<?php
 			echo $_SESSION['message'];
 			unset($_SESSION['message']);
 		?>
@@ -71,10 +71,22 @@ if (empty($_SESSION['user'])){
             </div>
             <div class="form-group">
               <label>Role</label>
+              <?php if($update==false): ?>
               <select name="roles">
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">User</option>
+                      </select>
+                  <?php else: ?>
+                    <select name="roles">
+                      <?php if($roles==="user" || "User"): ?>
+                        <option value="<?php echo $roles; ?>"><?php echo $roles; ?></option>
+                        <option value="admin">Admin</option>
+                      <?php else: ?>
+                        <option value="<?php echo $roles; ?>"><?php echo $roles; ?></option>
+                        <option value="user">User</option>
+                      <?php endif ?>  
               </select>
+              <?php endif ?>
             </div>
             <div class="form-group">
               <input type="hidden" name="id" value="<?php echo $id ?>">

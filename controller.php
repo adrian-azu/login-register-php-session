@@ -93,7 +93,7 @@ function register(){
   global $conn;
   global $user, $errors;
   global $newuser,$fname,$lname,$pass1,$pass2,$msg;
-  $roles="user";
+  $roles="User";
 if (empty(trim($_POST['firstname']))){
   array_push($errors,"First Name is required");
 }else{
@@ -138,6 +138,7 @@ if(empty($errors)){
       $_SESSION['lastname']=$lname;
       $_SESSION['username']=$newuser;
       $_SESSION['passw']=$pass1;
+
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
       }
@@ -178,7 +179,7 @@ if(isset($_GET['edit']) && !empty($_GET['edit'])){
           $fname=$row['firstname'];
           $lname=$row['lastname'];
           $user=$row['username'];
-          $roles=$row['firstname'];
+          $roles=$row['roles'];
           $update=true;
         }else{
           array_push($errors, $stmt->error);
